@@ -1,0 +1,97 @@
+/* Tailwind v4 + DaisyUI */
+@import "tailwindcss";
+@plugin "daisyui";
+
+@layer base {
+  /* Use DaisyUI border token instead of border-border */
+  * { @apply border-base-300; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    @apply bg-base-100 text-base-content font-sans;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+}
+
+@layer components {
+  .btn-gradient {
+    @apply bg-gradient-to-r from-primary to-secondary text-primary-content;
+  }
+
+  .card-hover {
+    @apply transition-all duration-200 hover:shadow-lg hover:-translate-y-1;
+  }
+
+  .input-focus {
+    @apply focus:ring-2 focus:ring-primary/50 focus:border-primary;
+  }
+
+  .sidebar-item {
+    @apply flex items-center px-4 py-3 text-base-content hover:bg-base-200 rounded-lg transition-colors duration-200;
+  }
+
+  .sidebar-item.active {
+    @apply bg-primary text-primary-content;
+  }
+
+  .toast {
+    @apply bg-base-100 text-base-content border border-base-300 shadow-lg;
+  }
+
+  .loading-spinner {
+    @apply animate-spin rounded-full border-2 border-base-300 border-t-primary;
+  }
+}
+
+/* ---------- Custom utilities (v4 way) ---------- */
+@utility text-balance {
+  text-wrap: balance;
+}
+
+@utility scrollbar-hide {
+  -ms-overflow-style: none;      /* IE/Edge */
+  scrollbar-width: none;         /* Firefox */
+  &::-webkit-scrollbar { display: none; }  /* Chrome/Safari */
+}
+
+@utility glass {
+  @apply bg-white/10 backdrop-blur-md border border-white/20;
+}
+
+@utility glass-dark {
+  @apply bg-black/10 backdrop-blur-md border border-black/20;
+}
+
+@utility focus-visible {
+  @apply outline-none ring-2 ring-primary/50;
+}
+
+/* ---------- Animations ---------- */
+@keyframes fade-in   { from { opacity: 0 } to { opacity: 1 } }
+@keyframes slide-in  { from { opacity: 0; transform: translateY(8px) } to { opacity: 1; transform: translateY(0) } }
+@keyframes bounce-in {
+  0% { transform: scale(.96) }
+  60% { transform: scale(1.02) }
+  100% { transform: scale(1) }
+}
+
+@utility animate-fade-in   { animation: fade-in 200ms both; }
+@utility animate-slide-in  { animation: slide-in 300ms both; }
+@utility animate-bounce-in { animation: bounce-in 300ms both; }
+
+/* Aliases (for backwards compatibility) */
+.fade-in   { @apply animate-fade-in; }
+.slide-in  { @apply animate-slide-in; }
+.bounce-in { @apply animate-bounce-in; }
+
+/* ---------- Custom scrollbar ---------- */
+::-webkit-scrollbar        { width: 6px; height: 6px; }
+::-webkit-scrollbar-track  { @apply bg-base-200; }
+::-webkit-scrollbar-thumb  { @apply bg-base-300 rounded-full; }
+::-webkit-scrollbar-thumb:hover { @apply bg-base-content/20; }
+
+/* ---------- Print helpers ---------- */
+@media print {
+  .no-print { display: none !important; }
+}

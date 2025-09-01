@@ -1,0 +1,12 @@
+export const generateAIReport = async(req, res) =>{} 
+export const downloadReport = async(req, res) =>{} 
+export const getReportTemplate = async(req, res) =>{} 
+export const getAnalytics = async(req, res) =>{} 
+export const generateSummaryData = async(req, res) =>{} 
+export const generateProjectStatusData = async(req, res) =>{} 
+export const generateTeamPerformanceData = async(req, res) =>{} 
+export const generateOverdueAnalysisData = async(req, res) =>{} 
+export const generateAnalyticsData = async(req, res) =>{} 
+export const calculateAverageCompletionTime = async(req, res) =>{} 
+export const calculateOnTimeDelivery = async(req, res) =>{} 
+export const calculateWorkloadDistribution = async(req, res) =>{} 
