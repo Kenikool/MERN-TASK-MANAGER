@@ -66,6 +66,78 @@ const userSchema = new mongoose.Schema({
       taskDue: { type: Boolean, default: true },
       taskCompleted: { type: Boolean, default: true }
     }
+  },
+  subscription: {
+    plan: {
+      type: String,
+      enum: ['free', 'basic', 'pro', 'premium'],
+      default: 'free'
+    },
+    status: {
+      type: String,
+      enum: ['active', 'cancelled', 'expired', 'trial'],
+      default: 'active'
+    },
+    startDate: {
+      type: Date,
+      default: Date.now
+    },
+    endDate: {
+      type: Date,
+      default: null
+    },
+    features: {
+      maxTasks: { type: Number, default: 5 },
+      maxProjects: { type: Number, default: 2 },
+      teamMembers: { type: Number, default: 1 },
+      timeTracking: { type: Boolean, default: false },
+      advancedReports: { type: Boolean, default: false },
+      aiFeatures: { type: Boolean, default: false },
+      aiRequests: { type: Number, default: 0 },
+      apiAccess: { type: Boolean, default: false }
+    },
+    paymentMethod: {
+      type: String,
+      default: null
+    },
+    lastPayment: {
+      amount: Number,
+      date: Date,
+      method: String,
+      transactionId: String
+    },
+    paymentHistory: [{
+      transactionId: {
+        type: String,
+        required: true
+      },
+      amount: {
+        type: Number,
+        required: true
+      },
+      currency: {
+        type: String,
+        default: 'USD'
+      },
+      method: {
+        type: String,
+        enum: ['stripe', 'paypal'],
+        required: true
+      },
+      planId: {
+        type: String,
+        required: true
+      },
+      date: {
+        type: Date,
+        default: Date.now
+      },
+      status: {
+        type: String,
+        enum: ['pending', 'completed', 'failed', 'refunded'],
+        default: 'completed'
+      }
+    }]
   }
 }, {
   timestamps: true,

@@ -1,2 +1,13 @@
 node_modules
 .env
+# Ignore backend uploads
+/backend/uploads
+# Ignore frontend dependencies
+/frontend/node_modules
+# Ignore logs and coverage
+logs
+coverage
+# macOS
+.DS_Store
+# Local environment overrides
+.env.local

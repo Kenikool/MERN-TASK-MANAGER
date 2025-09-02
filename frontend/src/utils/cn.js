@@ -1,10 +1,10 @@
-import { clsx } from 'clsx'
-import { twMerge } from 'tailwind-merge'
-
-
-
+// Simple className utility function
 export function cn(...inputs) {
-  return twMerge(clsx(inputs))
+  return inputs
+    .filter(Boolean)
+    .join(' ')
+    .replace(/\s+/g, ' ')
+    .trim()
 }
 
 export function getStatusColor(status) {

@@ -1,248 +1,208 @@
-import React, { useState, useEffect } from 'react';
-import { Wifi, WifiOff, AlertCircle, CheckCircle, Sync, Database, X } from 'lucide-react';
-import { useSocket } from '../../context/SocketContext';
-import { useNetworkStatus, useSyncManager } from '../../hooks/useOfflineAware';
+import React, { useState } from 'react'
+import {
+  Wifi,
+  WifiOff,
+  AlertCircle,
+  CheckCircle,
+  Clock,
+  Settings,
+  RefreshCw,
+  X
+} from 'lucide-react'
+import { useSocket } from '../../context/SocketContext'
 
 const ConnectionStatus = () => {
-  const { isConnected, connectionError } = useSocket();
-  const { isOnline } = useNetworkStatus();
-  const { isSyncing, syncProgress, pendingCount, syncPendingActions } = useSyncManager();
-  const [showStatus, setShowStatus] = useState(false);
-  const [showSyncPanel, setShowSyncPanel] = useState(false);
+  const { isConnected, isOfflineMode, connectionError, onlineUsers } = useSocket()
+  const [showDetails, setShowDetails] = useState(false)
 
-  // Auto-sync when coming back online
-  useEffect(() => {
-    if (isOnline && pendingCount > 0) {
-      const timer = setTimeout(() => {
-        syncPendingActions();
-      }, 2000); // Wait 2 seconds after coming online
-      
-      return () => clearTimeout(timer);
-    }
-  }, [isOnline, pendingCount, syncPendingActions]);
-
-  // Show status when connection changes
-  useEffect(() => {
-    if (!isConnected || connectionError || !isOnline) {
-      setShowStatus(true);
-    } else if (isConnected && isOnline) {
-      setShowStatus(true);
-      setTimeout(() => setShowStatus(false), 3000);
-    }
-  }, [isConnected, connectionError, isOnline]);
+  // Don't show anything if we're in offline mode by design
+  if (isOfflineMode && !connectionError) {
+    return null
+  }
 
   const getStatusInfo = () => {
-    if (!isOnline) {
+    if (isConnected) {
       return {
-        icon: <WifiOff className="w-5 h-5" />,
-        message: "You're offline. Changes will be saved locally.",
-        className: "alert-warning",
-        persistent: true,
-        showSync: pendingCount > 0
-      };
-    }
-
-    if (connectionError) {
+        icon: <CheckCircle className="w-4 h-4" />,
+        text: 'Connected',
+        color: 'text-success',
+        bgColor: 'bg-success/10',
+        borderColor: 'border-success/20'
+      }
+    } else if (isOfflineMode) {
       return {
-        icon: <AlertCircle className="w-5 h-5" />,
-        message: `Connection error: ${connectionError}`,
-        className: "alert-error",
-        persistent: true,
-        showSync: false
-      };
-    }
-
-    if (!isConnected) {
+        icon: <WifiOff className="w-4 h-4" />,
+        text: 'Offline Mode',
+        color: 'text-warning',
+        bgColor: 'bg-warning/10',
+        borderColor: 'border-warning/20'
+      }
+    } else {
       return {
-        icon: <WifiOff className="w-5 h-5" />,
-        message: "Connecting to real-time updates...",
-        className: "alert-warning",
-        persistent: true,
-        showSync: false
-      };
+        icon: <Clock className="w-4 h-4" />,
+        text: 'Connecting...',
+        color: 'text-info',
+        bgColor: 'bg-info/10',
+        borderColor: 'border-info/20'
+      }
     }
+  }
 
-    if (isConnected && isOnline) {
-      return {
-        icon: <CheckCircle className="w-5 h-5" />,
-        message: "Connected! Real-time updates active.",
-        className: "alert-success",
-        persistent: false,
-        showSync: pendingCount > 0
-      };
-    }
+  const status = getStatusInfo()
 
-    return null;
-  };
-
-  const statusInfo = getStatusInfo();
-  
-  // Always show if offline or has pending sync
-  const shouldShow = showStatus || !isOnline || pendingCount > 0 || isSyncing;
-
-  if (!shouldShow && !statusInfo) return null;
+  const handleRetryConnection = () => {
+    // Reload the page to retry connection
+    window.location.reload()
+  }
 
   return (
     <>
-      {/* Main Status Alert */}
-      {shouldShow && statusInfo && (
-        <div className="fixed top-4 right-4 z-50 max-w-sm">
-          <div className={`alert ${statusInfo.className} shadow-lg`}>
-            <div className="flex items-center gap-2 w-full">
-              {statusInfo.icon}
-              <div className="flex-1">
-                <span className="text-sm font-medium">{statusInfo.message}</span>
-                
-                {/* Pending sync indicator */}
-                {pendingCount > 0 && (
-                  <div className="text-xs mt-1 opacity-75">
-                    {pendingCount} action{pendingCount > 1 ? 's' : ''} pending sync
-                  </div>
-                )}
-                
-                {/* Sync progress */}
-                {isSyncing && (
-                  <div className="mt-2">
-                    <div className="text-xs mb-1">Syncing... {Math.round(syncProgress)}%</div>
-                    <progress 
-                      className="progress progress-primary w-full h-1" 
-                      value={syncProgress} 
-                      max="100"
-                    />
-                  </div>
-                )}
-              </div>
-              
-              {/* Action buttons */}
-              <div className="flex items-center gap-1">
-                {statusInfo.showSync && !isSyncing && (
-                  <button
-                    onClick={syncPendingActions}
-                    className="btn btn-ghost btn-xs"
-                    title="Sync now"
-                  >
-                    <Sync className="w-4 h-4" />
-                  </button>
-                )}
-                
-                {pendingCount > 0 && (
-                  <button
-                    onClick={() => setShowSyncPanel(true)}
-                    className="btn btn-ghost btn-xs"
-                    title="View sync details"
-                  >
-                    <Database className="w-4 h-4" />
-                  </button>
-                )}
-                
-                {!statusInfo.persistent && (
-                  <button
-                    onClick={() => setShowStatus(false)}
-                    className="btn btn-ghost btn-xs btn-circle"
-                  >
-                    <X className="w-3 h-3" />
-                  </button>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Status Indicator */}
+      <div 
+        className={`fixed top-20 right-4 z-40 flex items-center gap-2 px-3 py-2 rounded-lg border cursor-pointer transition-all duration-200 ${status.bgColor} ${status.borderColor} ${status.color}`}
+        onClick={() => setShowDetails(true)}
+      >
+        {status.icon}
+        <span className="text-sm font-medium">{status.text}</span>
+        {isConnected && onlineUsers.length > 0 && (
+          <span className="text-xs bg-white/20 px-2 py-0.5 rounded-full">
+            {onlineUsers.length} online
+          </span>
+        )}
+      </div>
 
-      {/* Sync Panel Modal */}
-      {showSyncPanel && (
-        <div className="modal modal-open">
-          <div className="modal-box">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="font-bold text-lg">Offline Sync Status</h3>
-              <button
-                onClick={() => setShowSyncPanel(false)}
-                className="btn btn-ghost btn-sm btn-circle"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-
-            <div className="space-y-4">
-              {/* Connection Status */}
-              <div className="flex items-center gap-3 p-3 bg-base-200 rounded-lg">
-                {isOnline ? (
-                  <Wifi className="w-5 h-5 text-success" />
-                ) : (
-                  <WifiOff className="w-5 h-5 text-error" />
-                )}
-                <div>
-                  <div className="font-medium">
-                    {isOnline ? 'Online' : 'Offline'}
-                  </div>
-                  <div className="text-sm text-base-content/60">
-                    {isOnline ? 'Connected to server' : 'Working offline'}
-                  </div>
-                </div>
-              </div>
-
-              {/* Pending Actions */}
-              <div className="flex items-center gap-3 p-3 bg-base-200 rounded-lg">
-                <Database className="w-5 h-5 text-info" />
-                <div>
-                  <div className="font-medium">
-                    {pendingCount} Pending Actions
-                  </div>
-                  <div className="text-sm text-base-content/60">
-                    {pendingCount === 0 
-                      ? 'All changes are synced'
-                      : `${pendingCount} changes waiting to sync`
-                    }
-                  </div>
-                </div>
-              </div>
-
-              {/* Sync Progress */}
-              {isSyncing && (
-                <div className="p-3 bg-base-200 rounded-lg">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Sync className="w-4 h-4 text-primary animate-spin" />
-                    <span className="font-medium">Syncing...</span>
-                  </div>
-                  <progress 
-                    className="progress progress-primary w-full" 
-                    value={syncProgress} 
-                    max="100"
-                  />
-                  <div className="text-xs text-center mt-1">
-                    {Math.round(syncProgress)}% complete
-                  </div>
-                </div>
-              )}
-
-              {/* Actions */}
-              <div className="flex gap-2">
-                {pendingCount > 0 && !isSyncing && isOnline && (
-                  <button
-                    onClick={() => {
-                      syncPendingActions();
-                      setShowSyncPanel(false);
-                    }}
-                    className="btn btn-primary flex-1"
-                  >
-                    <Sync className="w-4 h-4 mr-2" />
-                    Sync Now
-                  </button>
-                )}
-                
+      {/* Details Modal */}
+      {showDetails && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+          <div className="bg-base-100 rounded-lg shadow-2xl max-w-md w-full mx-4">
+            <div className="p-6">
+              {/* Header */}
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-bold">Connection Status</h3>
                 <button
-                  onClick={() => setShowSyncPanel(false)}
-                  className="btn btn-ghost flex-1"
+                  onClick={() => setShowDetails(false)}
+                  className="btn btn-ghost btn-sm btn-circle"
                 >
-                  Close
+                  <X className="w-4 h-4" />
                 </button>
+              </div>
+
+              {/* Status Details */}
+              <div className="space-y-4">
+                <div className={`flex items-center gap-3 p-3 rounded-lg ${status.bgColor} ${status.borderColor} border`}>
+                  {status.icon}
+                  <div>
+                    <div className={`font-medium ${status.color}`}>{status.text}</div>
+                    <div className="text-sm text-base-content/60">
+                      {isConnected && 'Real-time features are active'}
+                      {isOfflineMode && 'App is working in offline mode'}
+                      {!isConnected && !isOfflineMode && 'Attempting to connect...'}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Connection Error */}
+                {connectionError && (
+                  <div className="flex items-start gap-3 p-3 bg-error/10 border border-error/20 rounded-lg">
+                    <AlertCircle className="w-4 h-4 text-error mt-0.5 flex-shrink-0" />
+                    <div>
+                      <div className="font-medium text-error">Connection Error</div>
+                      <div className="text-sm text-base-content/60 mt-1">
+                        {connectionError}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Online Users */}
+                {isConnected && onlineUsers.length > 0 && (
+                  <div>
+                    <h4 className="font-medium mb-2">Online Team Members ({onlineUsers.length})</h4>
+                    <div className="space-y-2 max-h-32 overflow-y-auto">
+                      {onlineUsers.map(user => (
+                        <div key={user.id} className="flex items-center gap-2">
+                          <div className="w-2 h-2 bg-success rounded-full"></div>
+                          <span className="text-sm">{user.name}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Features Status */}
+                <div>
+                  <h4 className="font-medium mb-2">Feature Availability</h4>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex items-center justify-between">
+                      <span>Real-time Updates</span>
+                      <span className={isConnected ? 'text-success' : 'text-base-content/40'}>
+                        {isConnected ? '✓ Active' : '✗ Offline'}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span>Live Collaboration</span>
+                      <span className={isConnected ? 'text-success' : 'text-base-content/40'}>
+                        {isConnected ? '✓ Active' : '✗ Offline'}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span>Instant Notifications</span>
+                      <span className={isConnected ? 'text-success' : 'text-base-content/40'}>
+                        {isConnected ? '✓ Active' : '✗ Offline'}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span>Core Features</span>
+                      <span className="text-success">✓ Active</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Offline Mode Info */}
+                {isOfflineMode && (
+                  <div className="bg-info/10 border border-info/20 rounded-lg p-3">
+                    <h4 className="font-medium text-info mb-2">Offline Mode</h4>
+                    <div className="text-sm text-base-content/70">
+                      <p>The app is running in offline mode. All core features are available:</p>
+                      <ul className="list-disc list-inside mt-2 space-y-1">
+                        <li>Create and manage tasks</li>
+                        <li>Track time and productivity</li>
+                        <li>View analytics and reports</li>
+                        <li>Access all subscription features</li>
+                      </ul>
+                      <p className="mt-2">
+                        Real-time collaboration features will be restored when connection is available.
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {/* Actions */}
+                <div className="flex gap-3">
+                  {!isConnected && (
+                    <button
+                      onClick={handleRetryConnection}
+                      className="btn btn-primary btn-sm flex-1"
+                    >
+                      <RefreshCw className="w-4 h-4 mr-2" />
+                      Retry Connection
+                    </button>
+                  )}
+                  
+                  <button
+                    onClick={() => setShowDetails(false)}
+                    className="btn btn-ghost btn-sm flex-1"
+                  >
+                    Close
+                  </button>
+                </div>
               </div>
             </div>
           </div>
         </div>
       )}
     </>
-  );
-};
+  )
+}
 
-export default ConnectionStatus;
+export default ConnectionStatus

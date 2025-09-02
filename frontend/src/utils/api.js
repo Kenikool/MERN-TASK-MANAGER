@@ -179,6 +179,53 @@ export const analyticsAPI = {
   getSystem: (params) => api.get('/analytics/system', { params }),
 };
 
+// Subscription API
+export const subscriptionAPI = {
+  getCurrentSubscription: () => api.get('/subscription/current'),
+  getPlans: () => api.get('/subscription/plans'),
+  createSubscription: (data) => api.post('/subscription/create', data),
+  updateSubscription: (data) => api.put('/subscription/update', data),
+  cancelSubscription: () => api.post('/subscription/cancel'),
+  resumeSubscription: () => api.post('/subscription/resume'),
+  getInvoices: (params) => api.get('/subscription/invoices', { params }),
+  downloadInvoice: (invoiceId) => api.get(`/subscription/invoices/${invoiceId}/download`, {
+    responseType: 'blob'
+  }),
+  updatePaymentMethod: (data) => api.put('/subscription/payment-method', data),
+  getUsage: () => api.get('/subscription/usage'),
+  createPayPalOrder: (planId) => api.post('/subscription/paypal/create-order', { planId }),
+  capturePayPalOrder: (orderId) => api.post('/subscription/paypal/capture-order', { orderId }),
+  createStripeSession: (planId) => api.post('/subscription/stripe/create-session', { planId }),
+  handleStripeWebhook: (data) => api.post('/subscription/stripe/webhook', data),
+};
+
+// AI API
+export const aiAPI = {
+  generateTaskSuggestions: (data) => api.post('/ai/task-suggestions', data),
+  optimizeSchedule: (data) => api.post('/ai/optimize-schedule', data),
+  generateInsights: (data) => api.post('/ai/generate-insights', data),
+  improveDescription: (data) => api.post('/ai/improve-description', data),
+  estimateDuration: (data) => api.post('/ai/estimate-duration', data),
+  generateMeetingNotes: (data) => api.post('/ai/meeting-notes', data),
+  analyzeProductivity: (data) => api.post('/ai/analyze-productivity', data),
+  generateReportSummary: (data) => api.post('/ai/report-summary', data),
+  prioritizeTasks: (data) => api.post('/ai/prioritize-tasks', data),
+  chatWithAI: (data) => api.post('/ai/chat', data),
+  getAIUsage: () => api.get('/ai/usage'),
+  getAIInsights: (params) => api.get('/ai/insights', { params }),
+};
+
+// Payment API
+export const paymentAPI = {
+  createPayPalOrder: (amount, currency = 'USD', planId) => api.post('/payment/paypal/create-order', { amount, currency, planId }),
+  capturePayPalOrder: (orderId, planId) => api.post('/payment/paypal/capture-order', { orderId, planId }),
+  createStripePaymentIntent: (amount, currency = 'USD', planId) => api.post('/payment/stripe/create-intent', { amount, currency, planId }),
+  confirmStripePayment: (paymentIntentId) => api.post('/payment/stripe/confirm', { paymentIntentId }),
+  getPaymentHistory: (params) => api.get('/payment/history', { params }),
+  refundPayment: (paymentId, amount) => api.post('/payment/refund', { paymentId, amount }),
+  getPaymentStatus: () => api.get('/payment/status'),
+};
+
 // Generic API functions
 export const apiUtils = {
   // Handle file download
@@ -231,6 +278,18 @@ export const apiUtils = {
     }
     return 'An unexpected error occurred';
   },
+};
+
+// Feature flags API
+export const featureFlagsAPI = {
+  getFlags: () => api.get('/feature-flags'),
+  updateFlag: (flagId, enabled) => api.put(`/feature-flags/${flagId}`, { enabled }),
+};
+
+// Cleanup API (admin only)
+export const cleanupAPI = {
+  cleanupMockUrls: () => api.post('/cleanup/mock-urls'),
+  getCleanupStats: () => api.get('/cleanup/stats'),
 };
 
 export default api;
